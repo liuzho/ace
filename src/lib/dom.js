@@ -3,6 +3,40 @@
 var useragent = require("./useragent"); 
 var XHTML_NS = "http://www.w3.org/1999/xhtml";
 
+
+/**
+ * @param {HTMLElement} element 
+ * @returns {number}
+ */
+exports.getElemLeft = function(element) {
+    var actualLeft = element.offsetLeft;
+    var current = element.offsetParent;
+
+    while (current !== null && current != undefined) {
+        actualLeft += current.offsetLeft;
+        current = current.offsetParent;
+    }
+
+    return actualLeft;
+}
+
+/**
+ * @param {HTMLElement} element 
+ * @returns {number}
+ */
+exports.getElemTop = function(element) {
+    var actualTop = element.offsetTop;
+    var current = element.offsetParent;
+
+    while (current !== null && current != undefined) {
+        actualTop += current.offsetTop;
+        current = current.offsetParent;
+    }
+
+    return actualTop;
+}
+
+
 /**
  * @template {keyof HTMLElementTagNameMap} K
  * @overload

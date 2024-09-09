@@ -12,6 +12,7 @@ var GutterLayer = require("./layer/gutter").Gutter;
 var MarkerLayer = require("./layer/marker").Marker;
 var TextLayer = require("./layer/text").Text;
 var CursorLayer = require("./layer/cursor").Cursor;
+var SelectorLayer  = require("./layer/select_handler").SelectHandleDrawables;
 var HScrollBar = require("./scrollbar").HScrollBar;
 var VScrollBar = require("./scrollbar").VScrollBar;
 var HScrollBarCustom = require("./scrollbar_custom").HScrollBar;
@@ -73,6 +74,8 @@ class VirtualRenderer {
         this.$markerFront = new MarkerLayer(this.content);
 
         this.$cursorLayer = new CursorLayer(this.content);
+
+        this.$selectorLayer = new SelectorLayer(this.$cursorLayer);
 
         // Indicates whether the horizontal scrollbar is visible
         this.$horizScroll = false;
@@ -210,6 +213,7 @@ class VirtualRenderer {
             session.setScrollTop(-this.scrollMargin.top);
 
         this.$cursorLayer.setSession(session);
+        this.$selectorLayer.setSession(session);
         this.$markerBack.setSession(session);
         this.$markerFront.setSession(session);
         this.$gutterLayer.setSession(session);
@@ -973,6 +977,7 @@ class VirtualRenderer {
             this.$markerBack.update(config);
             this.$markerFront.update(config);
             this.$cursorLayer.update(config);
+            this.$selectorLayer.update(config);
             this.$moveTextAreaToCursor();
             this._signal("afterRender", changes);
             return;
@@ -998,6 +1003,7 @@ class VirtualRenderer {
             this.$markerBack.update(config);
             this.$markerFront.update(config);
             this.$cursorLayer.update(config);
+            this.$selectorLayer.update(config);
             this.$moveTextAreaToCursor();
             this._signal("afterRender", changes);
             return;
@@ -1037,6 +1043,7 @@ class VirtualRenderer {
 
         if (changes & this.CHANGE_CURSOR) {
             this.$cursorLayer.update(config);
+            this.$selectorLayer.update(config);
             this.$moveTextAreaToCursor();
         }
 

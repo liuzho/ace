@@ -650,7 +650,7 @@ module.exports = `
     color: #ccc;
     box-shadow: 1px 3px 2px grey;
     border: 1px solid #444;
-
+    display: none;
 }
 .ace_mobile-button {
     padding: 2px;
@@ -705,4 +705,29 @@ module.exports = `
 
 .ace_hidden_token {
     display: none;
+}
+
+.ace_select_handle {
+    z-index: 99;
+    position: absolute;
+    cursor: default;
+    pointer-events: auto;
+}
+
+.ace_mid_select_handle {
+    margin-left: -10px;
+    width: 20px;
+    opacity: 0.8;
+}
+
+.ace_l_select_handle {
+    margin-left: -33px;
+    width: 44px;
+    opacity: 0.8;
+}
+
+.ace_r_select_handle {
+    margin-left: -11px;
+    width: 44px;
+    opacity: 0.8;
 }`;

@@ -4,6 +4,8 @@
  * @typedef {import("./mouse_event").MouseEvent} MouseEvent
  */
 var useragent = require("../lib/useragent");
+var SelectDrawableEventHandler = require("./select_drawables_handler").SelectDrawableEventHandler;
+var SelectHandleDrawables = require("../layer/select_handler").SelectHandleDrawables;
 
 var DRAG_OFFSET = 0; // pixels
 var SCROLL_COOLDOWN_T = 550; // milliseconds
@@ -31,6 +33,9 @@ class DefaultHandlers {
 
         mouseHandler["selectByLines"] = this.extendSelectionBy.bind(mouseHandler, "getLineRange");
         mouseHandler["selectByWords"] = this.extendSelectionBy.bind(mouseHandler, "getWordRange");
+        
+        new SelectDrawableEventHandler(this, mouseHandler, editor.renderer.$selectorLayer);
+
     }
 
     /**
@@ -42,6 +47,9 @@ class DefaultHandlers {
         var pos = ev.getDocumentPosition();
         this.mousedownEvent = ev;
         var editor = this.editor;
+
+        var selectors = this.editor.renderer.$selectorLayer;
+        selectors.showMidSelectHandle();
 
         var button = ev.getButton();
         if (button !== 0) {
