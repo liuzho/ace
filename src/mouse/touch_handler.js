@@ -4,8 +4,13 @@ var MouseEvent = require("./mouse_event").MouseEvent;
 var event = require("../lib/event");
 var dom = require("../lib/dom");
 
+var mode = "scroll";
+
+exports.setMode = function (m) {
+    mode = m;
+};
+
 exports.addTouchListeners = function(el, editor) {
-    var mode = "scroll";
     var startX;
     var startY;
     var touchStartT;
@@ -90,7 +95,79 @@ exports.addTouchListeners = function(el, editor) {
             ["span", { class: "ace_mobile-button", action: "more" }, "..."]
         ], editor.container);
     }
-    function showContextMenu() {
+
+    // function getPointer() {
+    //     var point = document.getElementById("bdfm-menus-position");
+    //     if (point == undefined) {
+    //         point = dom.createElement("div");
+    //         point.id = "bdfm-menus-position";
+    //         point.style.width = "118px";
+    //         point.style.height = "28px";
+    //         point.style.backgroundColor = "#ff0000";
+    //         point.style.position = "absolute";
+    //         point.style.zIndex = "99";
+    //         point.style.opacity = "0.5";
+    //         document.body.appendChild(point);
+    //     }
+    //     return point;
+    // }
+    // var pointerTimeout;
+
+    function showContextMenu(opts) {
+        // console.log("liuzh: showContextMenu: selection.isEmpty="+editor.selection.isEmpty());
+        var lead = editor.selection.getSelectionLead();
+        var anchor = editor.selection.getSelectionAnchor();
+        var start, end;
+        if (anchor.row < lead.row || (anchor.row == lead.row && anchor.column < lead.column)) {
+            start = anchor;
+            end = lead;
+        } else {
+            start = lead;
+            end = anchor;
+        }
+        var cursor = editor.renderer.$cursorLayer;
+        var config = editor.renderer.layerConfig;
+        var startPos = cursor.session.documentToScreenPosition(start);
+        var startCursorLeft = cursor.$padding + startPos.column * config.characterWidth;
+        var startCursorTop = (startPos.row - config.firstRowScreen) * config.lineHeight;
+
+        var transX = dom.getElemLeft(cursor.element) - editor.renderer.scrollLeft;
+        var transY = dom.getElemTop(cursor.element) - editor.renderer.layerConfig.offset;
+
+        if(editor.selection.isEmpty()) {
+            
+            // var p = getPointer();
+            // p.style.left = (transX + startCursorLeft - p.clientWidth/2) + "px";
+            // p.style.top = (transY + startCursorTop - p.clientHeight) + "px";
+            // p.style.opacity = "0.5";
+            // if(pointerTimeout){
+            //     clearTimeout(pointerTimeout);
+            //     pointerTimeout = undefined;
+            // }
+           
+            try {
+                // @ts-ignore p1:x p2:y
+                AndroidEditor.showContextMenu(transX + startCursorLeft, transY + startCursorTop);
+                editor.on("input", hideContextMenu);
+                return;
+            }catch(e){}
+    
+        } else if(opts&&opts.longtap && pos) {
+            var startCursorLeft = cursor.$padding + pos.column * config.characterWidth;
+            var startCursorTop = (pos.row - config.firstRowScreen) * config.lineHeight;
+            //   var p = getPointer();
+            // p.style.left = (transX + startCursorLeft - p.clientWidth/2) + "px";
+            // p.style.top = (transY + startCursorTop - p.clientHeight) + "px";
+            // p.style.opacity = "0.5";
+          
+            try {
+                // @ts-ignore p1:x p2:y
+                AndroidEditor.showContextMenu(transX + startCursorLeft, transY + startCursorTop);
+                editor.on("input", hideContextMenu);
+                return;
+            }catch(e){}
+            return;
+        }
         if (!editor.getOption("enableMobileMenu")) {
             if (contextMenu) {
                 hideContextMenu();
@@ -116,6 +193,14 @@ exports.addTouchListeners = function(el, editor) {
         editor.on("input", hideContextMenu);
     }
     function hideContextMenu(e) {
+        // console.log("liuzh: hideContextMenu");
+        try{
+            // @ts-ignore
+            AndroidEditor.hideContextMenu();
+            editor.off("input", hideContextMenu);
+            return;
+        }catch(e){}
+
         if (contextMenu)
             contextMenu.style.display = "none";
         editor.off("input", hideContextMenu);
@@ -131,7 +216,7 @@ exports.addTouchListeners = function(el, editor) {
             editor.selection.selectWord();
         }
         mode = "wait";
-        showContextMenu();
+        showContextMenu({longtap: true});
     }
     function switchToSelectionMode() {
         longTouchTimer = null;
@@ -229,6 +314,8 @@ exports.addTouchListeners = function(el, editor) {
         touchStartT = t;
     }, editor);
 
+    var lastPos;
+
     event.addListener(el, "touchend", function (e) {
         pressed = editor.$mouseHandler.isMousePressed = false;
         if (animationTimer) clearInterval(animationTimer);
@@ -238,9 +325,16 @@ exports.addTouchListeners = function(el, editor) {
         } else if (longTouchTimer) {
             editor.selection.moveToPosition(pos);
             animationSteps = 0;
-            showContextMenu();
+            if(lastPos != undefined && pos.row == lastPos.row && pos.column == lastPos.column) {
+                showContextMenu();
+            } else {
+                // console.log("liuzh: touched-hideContextMenu-1, el="+el.id);
+                hideContextMenu();
+            }
+            lastPos = pos;
         } else if (mode == "scroll") {
             animate();
+            // console.log("liuzh: touched-hideContextMenu-2, el="+el.id);
             hideContextMenu();
         } else {
             showContextMenu();

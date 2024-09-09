@@ -4,7 +4,6 @@
  */
 var dom = require("../lib/dom");
 
-
 class Cursor {
     /**
      * @param {HTMLElement} parentEl
@@ -23,6 +22,7 @@ class Cursor {
         this.cursor = this.addCursor();
         dom.addCssClass(this.element, "ace_hidden-cursors");
         this.$updateCursors = this.$updateOpacity.bind(this);
+
     }
 
     /**

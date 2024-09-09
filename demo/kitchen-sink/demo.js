@@ -621,7 +621,8 @@ require("ace/ext/inline_autocomplete");
 env.editor.setOptions({
     enableBasicAutocompletion: true,
     enableInlineAutocompletion: true,
-    enableSnippets: true
+    enableSnippets: true,
+    enableMobileMenu: false,
 });
 
 var beautify = require("ace/ext/beautify");
