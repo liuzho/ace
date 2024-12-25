@@ -1,5 +1,8 @@
 "use strict";
 
+/**
+ * @type {Mode[]}
+ */
 var modes = [];
 /**
  * Suggests a mode based on the file extension present in the given path
@@ -45,6 +48,7 @@ class Mode {
 
     /**
      * @param {string} filename
+     * @returns {RegExpMatchArray | null}
      */
     supportsFile(filename) {
         return filename.match(this.extRe);
@@ -68,6 +72,7 @@ var supportedModes = {
     Astro:       ["astro"],
     AutoHotKey:  ["ahk"],
     BatchFile:   ["bat|cmd"],
+    Basic:       ["bas|bak"],
     BibTeX:      ["bib"],
     C_Cpp:       ["cpp|c|cc|cxx|h|hh|hpp|ino"],
     C9Search:    ["c9search_results"],
@@ -260,6 +265,9 @@ var nameOverrides = {
     AutoHotKey: "AutoHotkey / AutoIt"
 };
 
+/**
+ * @type {Record<string, Mode>}
+ */
 var modesByName = {};
 for (var name in supportedModes) {
     var data = supportedModes[name];

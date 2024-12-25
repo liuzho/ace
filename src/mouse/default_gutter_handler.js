@@ -133,6 +133,8 @@ class GutterTooltip extends Tooltip {
     constructor(editor) {
         super(editor.container);
         this.editor = editor;
+        /**@type {Number | Undefined}*/
+        this.visibleTooltipRow;
     }
 
     setPosition(x, y) {
@@ -222,7 +224,7 @@ class GutterTooltip extends Tooltip {
             }
         }
 
-        if (annotation.displayText.length === 0) return this.hide();
+        if (annotation.displayText.length === 0) return this.hideTooltip();
 
         var annotationMessages = {error: [], security: [], warning: [], info: [], hint: []};
         var iconClassName = gutter.$useSvgGutterIcons ? "ace_icon_svg" : "ace_icon";
@@ -267,12 +269,17 @@ class GutterTooltip extends Tooltip {
         }
 
         this.show();
+        this.visibleTooltipRow = row;
         this.editor._signal("showGutterTooltip", this);
     }
 
     hideTooltip() {
+        if(!this.isOpen){
+            return;
+        }
         this.$element.removeAttribute("aria-live");
         this.hide();
+        this.visibleTooltipRow = undefined;
         this.editor._signal("hideGutterTooltip", this);
     }
 

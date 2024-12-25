@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.37.1](https://github.com/ajaxorg/ace/compare/v1.37.0...v1.37.1) (2024-12-20)
+
+
+### Bug Fixes
+
+* hide gutter tooltip event missing from editor signal ([#5701](https://github.com/ajaxorg/ace/issues/5701)) ([66a6736](https://github.com/ajaxorg/ace/commit/66a673643d5d128eaf59d4fb6e5907fa6fa68773))
+
+### [1.36.6](https://github.com/ajaxorg/ace/compare/v1.36.5...v1.36.6) (2024-12-17)
+
+
+### Bug Fixes
+
+* update contribuition guide to mandate test cases ([#5694](https://github.com/ajaxorg/ace/issues/5694)) ([e6533b3](https://github.com/ajaxorg/ace/commit/e6533b3972d5adbf5995646c44894466b3b7f40f))
+* wrong behaviour rules in modes ([#5682](https://github.com/ajaxorg/ace/issues/5682)) ([442680c](https://github.com/ajaxorg/ace/commit/442680c68e66531c2d5ac80d80444ed600262ec1))
+
+### [1.36.5](https://github.com/ajaxorg/ace/compare/v1.36.4...v1.36.5) (2024-11-14)
+
+
+### Features
+
+* exposing getter setter for widget manager created using line widgets ([#5673](https://github.com/ajaxorg/ace/issues/5673)) ([f5d0c19](https://github.com/ajaxorg/ace/commit/f5d0c196c69d06a9dda1bdeb379fa20ecbf75590))
+
+
+### Bug Fixes
+
+* vue-directives regex bug ([#5671](https://github.com/ajaxorg/ace/issues/5671)) ([5e1e524](https://github.com/ajaxorg/ace/commit/5e1e524d7ef04e13291b5a979fb4166e973e61f0))
+
+### [1.36.4](https://github.com/ajaxorg/ace/compare/v1.36.3...v1.36.4) (2024-11-04)
+
+
+### Bug Fixes
+
+* **a11y:** update aria-label of textinput on cursor move ([#5665](https://github.com/ajaxorg/ace/issues/5665)) ([6ff93a8](https://github.com/ajaxorg/ace/commit/6ff93a86fe8c4855789ee7e7c156f7b376c0f935))
+
+### [1.36.3](https://github.com/ajaxorg/ace/compare/v1.36.2...v1.36.3) (2024-10-21)
+
+
+### Bug Fixes
+
+* `readdirSync` options `recursive: true` was added only in NodeJs v20.1.0 ([#5645](https://github.com/ajaxorg/ace/issues/5645)) ([2953f72](https://github.com/ajaxorg/ace/commit/2953f72877a90691432373cfe9182e60ea9b2d8f))
+
 ### [1.36.2](https://github.com/ajaxorg/ace/compare/v1.36.1...v1.36.2) (2024-08-30)
 
 

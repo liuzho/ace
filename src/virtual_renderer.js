@@ -30,14 +30,14 @@ dom.importCssString(editorCss, "ace_editor.css", false);
 
 /**
  * The class that is responsible for drawing everything you see on the screen!
- * @related editor.renderer 
+ * @related editor.renderer
  **/
 class VirtualRenderer {
     /**
      * Constructs a new `VirtualRenderer` within the `container` specified, applying the given `theme`.
      * @param {HTMLElement | null} [container] The root element of the editor
      * @param {String} [theme] The starting theme
-     
+
      **/
     constructor(container, theme) {
         var _self = this;
@@ -207,7 +207,7 @@ class VirtualRenderer {
     setSession(session) {
         if (this.session)
             this.session.doc.off("changeNewLineMode", this.onChangeNewLineMode);
-            
+
         this.session = session;
         if (session && this.scrollMargin.top && session.getScrollTop() <= 0)
             session.setScrollTop(-this.scrollMargin.top);
@@ -220,11 +220,11 @@ class VirtualRenderer {
         this.$textLayer.setSession(session);
         if (!session)
             return;
-        
+
         this.$loop.schedule(this.CHANGE_FULL);
         this.session.$setFontMetrics(this.$fontMetrics);
         this.scrollBarH.scrollLeft = this.scrollBarV.scrollTop = null;
-        
+
         this.onChangeNewLineMode = this.onChangeNewLineMode.bind(this);
         this.onChangeNewLineMode();
         this.session.doc.on("changeNewLineMode", this.onChangeNewLineMode);
@@ -269,12 +269,18 @@ class VirtualRenderer {
         this.$loop.schedule(this.CHANGE_LINES);
     }
 
+    /**
+     * @internal
+     */
     onChangeNewLineMode() {
         this.$loop.schedule(this.CHANGE_TEXT);
         this.$textLayer.$updateEolChar();
         this.session.$bidiHandler.setEolChar(this.$textLayer.EOL_CHAR);
     }
-    
+
+    /**
+     * @internal
+     */
     onChangeTabSize() {
         this.$loop.schedule(this.CHANGE_TEXT | this.CHANGE_MARKER);
         this.$textLayer.onChangeTabSize();
@@ -290,7 +296,7 @@ class VirtualRenderer {
     /**
      * Triggers a full update of all the layers, for all the rows.
      * @param {Boolean} [force] If `true`, forces the changes through
-     
+
      **/
     updateFull(force) {
         if (force)
@@ -318,7 +324,7 @@ class VirtualRenderer {
      * @param {Number} [gutterWidth] The width of the gutter in pixels
      * @param {Number} [width] The width of the editor in pixels
      * @param {Number} [height] The hiehgt of the editor, in pixels
-     
+     * @internal
      **/
     onResize(force, gutterWidth, width, height) {
         if (this.resizing > 2)
@@ -345,7 +351,7 @@ class VirtualRenderer {
         var changes = this.$updateCachedSize(force, gutterWidth, width, height);
 
         if (this.$resizeTimer) this.$resizeTimer.cancel();
-        
+
         if (!this.$size.scrollerHeight || (!width && !height))
             return this.resizing = 0;
 
@@ -373,7 +379,7 @@ class VirtualRenderer {
      * @param [width]
      * @param [height]
      * @return {number}
-     
+
      */
     $updateCachedSize(force, gutterWidth, width, height) {
         height -= (this.$extraHeight || 0);
@@ -392,7 +398,7 @@ class VirtualRenderer {
             size.scrollerHeight = size.height;
             if (this.$horizScroll)
                 size.scrollerHeight -= this.scrollBarH.getHeight();
-                
+
             this.scrollBarV.setHeight(size.scrollerHeight);
             this.scrollBarV.element.style.bottom = this.scrollBarH.getHeight() + "px";
 
@@ -402,29 +408,29 @@ class VirtualRenderer {
         if (width && (force || size.width != width)) {
             changes |= this.CHANGE_SIZE;
             size.width = width;
-            
+
             if (gutterWidth == null)
                 gutterWidth = this.$showGutter ? this.$gutter.offsetWidth : 0;
-            
+
             this.gutterWidth = gutterWidth;
-            
+
             dom.setStyle(this.scrollBarH.element.style, "left", gutterWidth + "px");
             dom.setStyle(this.scroller.style, "left", gutterWidth + this.margin.left + "px");
             size.scrollerWidth = Math.max(0, width - gutterWidth - this.scrollBarV.getWidth() - this.margin.h);
             dom.setStyle(this.$gutter.style, "left", this.margin.left + "px");
-            
+
             var right = this.scrollBarV.getWidth() + "px";
             dom.setStyle(this.scrollBarH.element.style, "right", right);
             dom.setStyle(this.scroller.style, "right", right);
             dom.setStyle(this.scroller.style, "bottom", this.scrollBarH.getHeight());
-                
+
             this.scrollBarH.setWidth(size.scrollerWidth);
 
             if (this.session && this.session.getUseWrapMode() && this.adjustWrapLimit() || force) {
                 changes |= this.CHANGE_FULL;
             }
         }
-        
+
         size.$dirty = !width || !height;
 
         if (changes)
@@ -434,9 +440,9 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param {number} width
-     
+     * @internal
      */
     onGutterResize(width) {
         var gutterWidth = this.$showGutter ? width : 0;
@@ -454,7 +460,7 @@ class VirtualRenderer {
 
     /**
      * Adjusts the wrap limit, which is the number of characters that can fit within the width of the edit area on screen.
-     
+
      **/
     adjustWrapLimit() {
         var availableWidth = this.$size.scrollerWidth - this.$padding * 2;
@@ -465,7 +471,7 @@ class VirtualRenderer {
     /**
      * Identifies whether you want to have an animated scroll or not.
      * @param {Boolean} shouldAnimate Set to `true` to show animated scrolls
-     
+
      **/
     setAnimatedScroll(shouldAnimate){
         this.setOption("animatedScroll", shouldAnimate);
@@ -474,7 +480,7 @@ class VirtualRenderer {
     /**
      * Returns whether an animated scroll happens or not.
      * @returns {Boolean}
-     
+
      **/
     getAnimatedScroll() {
         return this.$animatedScroll;
@@ -483,7 +489,7 @@ class VirtualRenderer {
     /**
      * Identifies whether you want to show invisible characters or not.
      * @param {Boolean} showInvisibles Set to `true` to show invisibles
-     
+
      **/
     setShowInvisibles(showInvisibles) {
         this.setOption("showInvisibles", showInvisibles);
@@ -493,7 +499,7 @@ class VirtualRenderer {
     /**
      * Returns whether invisible characters are being shown or not.
      * @returns {Boolean}
-     
+
      **/
     getShowInvisibles() {
         return this.getOption("showInvisibles");
@@ -501,7 +507,7 @@ class VirtualRenderer {
 
     /**
      * @return {boolean}
-     
+
      */
     getDisplayIndentGuides() {
         return this.getOption("displayIndentGuides");
@@ -509,14 +515,14 @@ class VirtualRenderer {
 
     /**
      * @param {boolean} display
-     
+
      */
     setDisplayIndentGuides(display) {
         this.setOption("displayIndentGuides", display);
     }
 
     /**
-     
+
      * @return {boolean}
      */
     getHighlightIndentGuides() {
@@ -524,7 +530,7 @@ class VirtualRenderer {
     }
 
     /**
-     
+
      * @param {boolean} highlight
      */
     setHighlightIndentGuides(highlight) {
@@ -534,7 +540,7 @@ class VirtualRenderer {
     /**
      * Identifies whether you want to show the print margin or not.
      * @param {Boolean} showPrintMargin Set to `true` to show the print margin
-     
+
      **/
     setShowPrintMargin(showPrintMargin) {
         this.setOption("showPrintMargin", showPrintMargin);
@@ -543,7 +549,7 @@ class VirtualRenderer {
     /**
      * Returns whether the print margin is being shown or not.
      * @returns {Boolean}
-     
+
      **/
     getShowPrintMargin() {
         return this.getOption("showPrintMargin");
@@ -551,7 +557,7 @@ class VirtualRenderer {
     /**
      * Identifies whether you want to show the print margin column or not.
      * @param {number} printMarginColumn Set to `true` to show the print margin column
-     
+
      **/
     setPrintMarginColumn(printMarginColumn) {
         this.setOption("printMarginColumn", printMarginColumn);
@@ -560,7 +566,7 @@ class VirtualRenderer {
     /**
      * Returns whether the print margin column is being shown or not.
      * @returns {number}
-     
+
      **/
     getPrintMarginColumn() {
         return this.getOption("printMarginColumn");
@@ -569,7 +575,7 @@ class VirtualRenderer {
     /**
      * Returns `true` if the gutter is being shown.
      * @returns {Boolean}
-     
+
      **/
     getShowGutter(){
         return this.getOption("showGutter");
@@ -578,14 +584,14 @@ class VirtualRenderer {
     /**
      * Identifies whether you want to show the gutter or not.
      * @param {Boolean} show Set to `true` to show the gutter
-     
+
      **/
     setShowGutter(show){
         return this.setOption("showGutter", show);
     }
 
     /**
-     
+
      * @returns {boolean}
      */
     getFadeFoldWidgets(){
@@ -593,7 +599,7 @@ class VirtualRenderer {
     }
 
     /**
-     
+
      * @param {boolean} show
      */
     setFadeFoldWidgets(show) {
@@ -609,7 +615,7 @@ class VirtualRenderer {
     }
 
     /**
-     
+
      * @returns {boolean}
      */
     getHighlightGutterLine() {
@@ -617,7 +623,7 @@ class VirtualRenderer {
     }
 
     /**
-     
+
      */
     $updatePrintMargin() {
         if (!this.$showPrintMargin && !this.$printMarginEl)
@@ -635,7 +641,7 @@ class VirtualRenderer {
         var style = this.$printMarginEl.style;
         style.left = Math.round(this.characterWidth * this.$printMarginColumn + this.$padding) + "px";
         style.visibility = this.$showPrintMargin ? "visible" : "hidden";
-        
+
         if (this.session && this.session.$wrap == -1)
             this.adjustWrapLimit();
     }
@@ -670,7 +676,7 @@ class VirtualRenderer {
     // move text input over the cursor
     // this is required for IME
     /**
-     
+
      */
     $moveTextAreaToCursor() {
         if (this.$isMousePressed) return;
@@ -685,7 +691,7 @@ class VirtualRenderer {
             return;
         if (composition && composition.markerRange)
             pixelPos = this.$cursorLayer.getPixelPosition(composition.markerRange.start, true);
-        
+
         var config = this.layerConfig;
         var posTop = pixelPos.top;
         var posLeft = pixelPos.left;
@@ -711,7 +717,7 @@ class VirtualRenderer {
                 posTop += this.lineHeight + 2;
             }
         }
-        
+
         posLeft -= this.scrollLeft;
         if (posLeft > this.$size.scrollerWidth - w)
             posLeft = this.$size.scrollerWidth - w;
@@ -766,7 +772,7 @@ class VirtualRenderer {
     /**
      * Sets the padding for all the layers.
      * @param {Number} padding A new padding value (in pixels)
-     
+
      **/
     setPadding(padding) {
         this.$padding = padding;
@@ -779,12 +785,12 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param {number} [top]
      * @param {number} [bottom]
      * @param {number} [left]
      * @param {number} [right]
-     
+
      */
     setScrollMargin(top, bottom, left, right) {
         var sm = this.scrollMargin;
@@ -805,7 +811,7 @@ class VirtualRenderer {
      * @param {number} [bottom]
      * @param {number} [left]
      * @param {number} [right]
-     
+
      */
     setMargin(top, bottom, left, right) {
         var sm = this.margin;
@@ -822,7 +828,7 @@ class VirtualRenderer {
     /**
      * Returns whether the horizontal scrollbar is set to be always visible.
      * @returns {Boolean}
-     
+
      **/
     getHScrollBarAlwaysVisible() {
         return this.$hScrollBarAlwaysVisible;
@@ -831,7 +837,7 @@ class VirtualRenderer {
     /**
      * Identifies whether you want to show the horizontal scrollbar or not.
      * @param {Boolean} alwaysVisible Set to `true` to make the horizontal scroll bar visible
-     
+
      **/
     setHScrollBarAlwaysVisible(alwaysVisible) {
         this.setOption("hScrollBarAlwaysVisible", alwaysVisible);
@@ -839,7 +845,7 @@ class VirtualRenderer {
     /**
      * Returns whether the horizontal scrollbar is set to be always visible.
      * @returns {Boolean}
-     
+
      **/
     getVScrollBarAlwaysVisible() {
         return this.$vScrollBarAlwaysVisible;
@@ -854,7 +860,7 @@ class VirtualRenderer {
     }
 
     /**
-     
+
      */
     $updateScrollBarV() {
         var scrollHeight = this.layerConfig.maxHeight;
@@ -877,17 +883,17 @@ class VirtualRenderer {
     freeze() {
         this.$frozen = true;
     }
-    
+
     unfreeze() {
         this.$frozen = false;
     }
 
     /**
-     * 
+     *
      * @param {number} changes
      * @param {boolean} [force]
      * @returns {number}
-     
+
      */
     $renderChanges(changes, force) {
         if (this.$changes) {
@@ -896,8 +902,8 @@ class VirtualRenderer {
         }
         if ((!this.session || !this.container.offsetWidth || this.$frozen) || (!changes && !force)) {
             this.$changes |= changes;
-            return; 
-        } 
+            return;
+        }
         if (this.$size.$dirty) {
             this.$changes |= changes;
             return this.onResize(true);
@@ -906,9 +912,9 @@ class VirtualRenderer {
             this.$textLayer.checkForSizeChanges();
         }
         // this.$logChanges(changes);
-        
+
         this._signal("beforeRender", changes);
-        
+
         if (this.session && this.session.$bidiHandler)
             this.session.$bidiHandler.updateCharacterWidths(this.$fontMetrics);
 
@@ -924,7 +930,7 @@ class VirtualRenderer {
             changes |= this.$computeLayerConfig() | this.$loop.clear();
             // If a change is made offscreen and wrapMode is on, then the onscreen
             // lines may have been pushed down. If so, the first screen row will not
-            // have changed, but the first actual row will. In that case, adjust 
+            // have changed, but the first actual row will. In that case, adjust
             // scrollTop so that the cursor and onscreen content stays in the same place.
             // TODO: find a better way to handle this, that works non wrapped case and doesn't compute layerConfig twice
             if (config.firstRow != this.layerConfig.firstRow && config.firstRowScreen == this.layerConfig.firstRowScreen) {
@@ -941,16 +947,16 @@ class VirtualRenderer {
             this.$updateScrollBarV();
             if (changes & this.CHANGE_H_SCROLL)
                 this.$updateScrollBarH();
-            
+
             dom.translate(this.content, -this.scrollLeft, -config.offset);
-            
+
             var width = config.width + 2 * this.$padding + "px";
             var height = config.minHeight + "px";
-            
+
             dom.setStyle(this.content.style, "width", width);
             dom.setStyle(this.content.style, "height", height);
         }
-        
+
         // horizontal scrolling
         if (changes & this.CHANGE_H_SCROLL) {
             dom.translate(this.content, -this.scrollLeft, -config.offset);
@@ -1053,53 +1059,53 @@ class VirtualRenderer {
     }
 
     /**
-     
+
      */
     $autosize() {
         var height = this.session.getScreenLength() * this.lineHeight;
         var maxHeight = this.$maxLines * this.lineHeight;
-        var desiredHeight = Math.min(maxHeight, 
+        var desiredHeight = Math.min(maxHeight,
             Math.max((this.$minLines || 1) * this.lineHeight, height)
         ) + this.scrollMargin.v + (this.$extraHeight || 0);
         if (this.$horizScroll)
             desiredHeight += this.scrollBarH.getHeight();
         if (this.$maxPixelHeight && desiredHeight > this.$maxPixelHeight)
             desiredHeight = this.$maxPixelHeight;
-        
+
         var hideScrollbars = desiredHeight <= 2 * this.lineHeight;
         var vScroll = !hideScrollbars && height > maxHeight;
-        
+
         if (desiredHeight != this.desiredHeight ||
             this.$size.height != this.desiredHeight || vScroll != this.$vScroll) {
             if (vScroll != this.$vScroll) {
                 this.$vScroll = vScroll;
                 this.scrollBarV.setVisible(vScroll);
             }
-            
+
             var w = this.container.clientWidth;
             this.container.style.height = desiredHeight + "px";
             this.$updateCachedSize(true, this.$gutterWidth, w, desiredHeight);
             // this.$loop.changes = 0;
             this.desiredHeight = desiredHeight;
-            
+
             this._signal("autosize");
         }
     }
 
     /**
-     
+
      * @returns {number}
      */
     $computeLayerConfig() {
         var session = this.session;
         var size = this.$size;
-        
+
         var hideScrollbars = size.height <= 2 * this.lineHeight;
         var screenLines = this.session.getScreenLength();
         var maxHeight = screenLines * this.lineHeight;
 
         var longestLine = this.$getLongestLine();
-        
+
         var horizScroll = !hideScrollbars && (this.$hScrollBarAlwaysVisible ||
             size.scrollerWidth - longestLine - 2 * this.$padding < 0);
 
@@ -1114,19 +1120,19 @@ class VirtualRenderer {
             this.$autosize();
 
         var minHeight = size.scrollerHeight + this.lineHeight;
-        
+
         var scrollPastEnd = !this.$maxLines && this.$scrollPastEnd
             ? (size.scrollerHeight - this.lineHeight) * this.$scrollPastEnd
             : 0;
         maxHeight += scrollPastEnd;
-        
+
         var sm = this.scrollMargin;
         this.session.setScrollTop(Math.max(-sm.top,
             Math.min(this.scrollTop, maxHeight - size.scrollerHeight + sm.bottom)));
 
-        this.session.setScrollLeft(Math.max(-sm.left, Math.min(this.scrollLeft, 
+        this.session.setScrollLeft(Math.max(-sm.left, Math.min(this.scrollLeft,
             longestLine + 2 * this.$padding - size.scrollerWidth + sm.right)));
-        
+
         var vScroll = !hideScrollbars && (this.$vScrollBarAlwaysVisible ||
             size.scrollerHeight - maxHeight + scrollPastEnd < 0 || this.scrollTop > sm.top);
         var vScrollChanged = vScrollBefore !== vScroll;
@@ -1162,7 +1168,7 @@ class VirtualRenderer {
         offset = this.scrollTop - firstRowScreen * lineHeight;
 
         var changes = 0;
-        if (this.layerConfig.width != longestLine || hScrollChanged) 
+        if (this.layerConfig.width != longestLine || hScrollChanged)
             changes = this.CHANGE_H_SCROLL;
         // Horizontal scrollbar visibility may have changed, which changes
         // the client height of the scroller
@@ -1172,7 +1178,7 @@ class VirtualRenderer {
             if (vScrollChanged)
                 longestLine = this.$getLongestLine();
         }
-        
+
         this.layerConfig = {
             width : longestLine,
             padding : this.$padding,
@@ -1198,7 +1204,7 @@ class VirtualRenderer {
 
     /**
      * @returns {boolean | undefined}
-     
+
      */
     $updateLines() {
         if (!this.$changedLines) return;
@@ -1225,15 +1231,15 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @returns {number}
-     
+
      */
     $getLongestLine() {
         var charCount = this.session.getScreenWidth();
         if (this.showInvisibles && !this.session.$useWrapMode)
             charCount += 1;
-            
+
         if (this.$textLayer && charCount > this.$textLayer.MAX_LINE_LENGTH)
             charCount = this.$textLayer.MAX_LINE_LENGTH + 30;
 
@@ -1275,7 +1281,7 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * Redraw breakpoints.
      * @param {any} [rows]
      */
@@ -1319,7 +1325,7 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param {Point} anchor
      * @param {Point} lead
      * @param {number} [offset]
@@ -1331,7 +1337,7 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * Scrolls the cursor into the first visibile area of the editor
      * @param {Point} [cursor]
      * @param {number} [offset]
@@ -1433,7 +1439,7 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param {Point} cursor
      * @param {number} [alignment]
      * @returns {number}
@@ -1451,7 +1457,7 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param {number} fromValue
      * @param {number} toValue
      * @returns {*[]}
@@ -1477,7 +1483,7 @@ class VirtualRenderer {
      * @param {Boolean} center If `true`, centers the editor the to indicated line
      * @param {Boolean} animate If `true` animates scrolling
      * @param {() => void} [callback] Function to be called after the animation has finished
-     
+
      **/
     scrollToLine(line, center, animate, callback) {
         var pos = this.$cursorLayer.getPixelPosition({row: line, column: 0});
@@ -1492,20 +1498,20 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param fromValue
      * @param [callback]
-     
+
      */
     animateScrolling(fromValue, callback) {
         var toValue = this.scrollTop;
         if (!this.$animatedScroll)
             return;
         var _self = this;
-        
+
         if (fromValue == toValue)
             return;
-        
+
         if (this.$scrollAnimation) {
             var oldSteps = this.$scrollAnimation.steps;
             if (oldSteps.length) {
@@ -1514,7 +1520,7 @@ class VirtualRenderer {
                     return;
             }
         }
-        
+
         var steps = _self.$calcSteps(fromValue, toValue);
         this.$scrollAnimation = {from: fromValue, to: toValue, steps: steps};
 
@@ -1523,7 +1529,7 @@ class VirtualRenderer {
         _self.session.setScrollTop(steps.shift());
         // trick session to think it's already scrolled to not loose toValue
         _self.session.$scrollTop = toValue;
-        
+
         function endAnimation() {
             // @ts-ignore
             _self.$timer = clearInterval(_self.$timer);
@@ -1531,14 +1537,14 @@ class VirtualRenderer {
             _self.$stopAnimation = false;
             callback && callback();
         }
-        
+
         this.$timer = setInterval(function() {
             if (_self.$stopAnimation) {
                 endAnimation();
                 return;
             }
 
-            if (!_self.session) 
+            if (!_self.session)
                 return clearInterval(_self.$timer);
             if (steps.length) {
                 _self.session.setScrollTop(steps.shift());
@@ -1586,7 +1592,7 @@ class VirtualRenderer {
         this.session.setScrollTop(y);
         this.session.setScrollLeft(x);
     }
-    
+
     /**
      * Scrolls the editor across both x- and y-axes.
      * @param {Number} deltaX The x value to scroll by
@@ -1618,11 +1624,11 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param {number} x
      * @param {number} y
      * @returns {import("../ace-internal").Ace.ScreenCoordinates}
-     
+
      */
     pixelToScreenCoordinates(x, y) {
         var canvasPos;
@@ -1634,7 +1640,7 @@ class VirtualRenderer {
         } else {
             canvasPos = this.scroller.getBoundingClientRect();
         }
-        
+
         var offsetX = x + this.scrollLeft - canvasPos.left - this.$padding;
         var offset = offsetX / this.characterWidth;
         var row = Math.floor((y + this.scrollTop - canvasPos.top) / this.lineHeight);
@@ -1644,11 +1650,11 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param {number} x
      * @param {number} y
      * @returns {Point}
-     
+
      */
     screenToTextCoordinates(x, y) {
         var canvasPos;
@@ -1684,7 +1690,7 @@ class VirtualRenderer {
         var x = this.$padding + (this.session.$bidiHandler.isBidiRow(pos.row, row)
              ? this.session.$bidiHandler.getPosLeft(pos.column)
              : Math.round(pos.column * this.characterWidth));
-        
+
         var y = pos.row * this.lineHeight;
 
         return {
@@ -1711,7 +1717,7 @@ class VirtualRenderer {
 
     /**
      * @param {Object} composition
-     
+
      **/
     showComposition(composition) {
         this.$composition = composition;
@@ -1720,7 +1726,7 @@ class VirtualRenderer {
         }
         if (composition.useTextareaForIME == undefined)
             composition.useTextareaForIME = this.$useTextareaForIME;
-        
+
         if (this.$useTextareaForIME) {
             dom.addCssClass(this.textarea, "ace_composition");
             this.textarea.style.cssText = "";
@@ -1736,7 +1742,7 @@ class VirtualRenderer {
      * @param {String} text A string of text to use
      *
      * Sets the inner text of the current composition to `text`.
-     
+
      **/
     setCompositionText(text) {
         var cursor = this.session.selection.cursor;
@@ -1747,12 +1753,12 @@ class VirtualRenderer {
     /**
      *
      * Hides the current composition.
-     
+
      **/
     hideComposition() {
         if (!this.$composition)
             return;
-        
+
         if (this.$composition.markerId)
             this.session.removeMarker(this.$composition.markerId);
 
@@ -1773,10 +1779,10 @@ class VirtualRenderer {
         var insertPosition = position || { row: cursor.row, column: cursor.column };
 
         this.removeGhostText();
-        
+
         var textChunks = this.$calculateWrappedTextChunks(text, insertPosition);
         this.addToken(textChunks[0].text, "ghost_text", insertPosition.row, insertPosition.column);
-        
+
         this.$ghostText = {
             text: text,
             position: {
@@ -1784,7 +1790,7 @@ class VirtualRenderer {
                 column: insertPosition. column
             }
         };
-        
+
         var widgetDiv = dom.createElement("div");
         if (textChunks.length > 1) {
             // If there are tokens to the right of the cursor, hide those.
@@ -1794,20 +1800,20 @@ class VirtualRenderer {
             textChunks.slice(1).forEach(el => {
                 var chunkDiv = dom.createElement("div");
                 var chunkSpan = dom.createElement("span");
-                chunkSpan.className = "ace_ghost_text";            
+                chunkSpan.className = "ace_ghost_text";
 
                 // If the line is wider than the viewport, wrap the line
                 if (el.wrapped) chunkDiv.className = "ghost_text_line_wrapped";
 
-                // If a given line doesn't have text (e.g. it's a line of whitespace), set a space as the 
+                // If a given line doesn't have text (e.g. it's a line of whitespace), set a space as the
                 // textcontent so that browsers render the empty line div.
-                if (el.text.length === 0) el.text = " "; 
-                
+                if (el.text.length === 0) el.text = " ";
+
                 chunkSpan.appendChild(dom.createTextNode(el.text));
                 chunkDiv.appendChild(chunkSpan);
                 widgetDiv.appendChild(chunkDiv);
 
-                // Overwrite lastLineDiv every iteration so at the end it points to 
+                // Overwrite lastLineDiv every iteration so at the end it points to
                 // the last added element.
                 lastLineDiv = chunkDiv;
             });
@@ -1819,7 +1825,7 @@ class VirtualRenderer {
                 element.appendChild(dom.createTextNode(token.value));
                 lastLineDiv.appendChild(element);
             });
-            
+
             this.$ghostTextWidget = {
                 el: widgetDiv,
                 row: insertPosition.row,
@@ -1837,7 +1843,7 @@ class VirtualRenderer {
 
             // If it fits, no action needed
             if (fitsY) return;
-            
+
             // If it can fully fit in the screen, scroll down until it fits on the screen
             // if it cannot fully fit, scroll so that the row with the cursor
             // is at the top of the screen.
@@ -1845,13 +1851,13 @@ class VirtualRenderer {
                 this.scrollBy(0, (textChunks.length - 1) * this.lineHeight);
             } else {
                 this.scrollToRow(insertPosition.row);
-            }   
+            }
         }
-        
+
     }
 
     /**
-     * Calculates and organizes text into wrapped chunks. Initially splits the text by newline characters, 
+     * Calculates and organizes text into wrapped chunks. Initially splits the text by newline characters,
      * then further processes each line based on display tokens and session settings for tab size and wrapping limits.
      *
      * @param {string} text
@@ -1920,7 +1926,7 @@ class VirtualRenderer {
                     var diff = token.value.length - (l - column);
                     var before = token.value.slice(0, diff);
                     var after = token.value.slice(diff);
-    
+
                     tokens.splice(i, 1, {type: token.type, value: before},  newToken,  {type: token.type, value: after});
                     break;
                 }
@@ -1949,10 +1955,10 @@ class VirtualRenderer {
                 continue;
             }
             // We call this method after we call addToken, so we are guaranteed a new token starts at the cursor position.
-            // Once we reached that point in the loop, flip the flag. 
+            // Once we reached that point in the loop, flip the flag.
             if (l === column) {
                 hasPassedCursor = true;
-            } 
+            }
         }
         this.updateLines(row, row);
         return hiddenTokens;
@@ -1967,7 +1973,7 @@ class VirtualRenderer {
      * [Sets a new theme for the editor. `theme` should exist, and be a directory path, like `ace/theme/textmate`.]{: #VirtualRenderer.setTheme}
      * @param {String | Theme} [theme] The path to a theme
      * @param {() => void} [cb] optional callback
-     
+
      **/
     setTheme(theme, cb) {
         var _self = this;
@@ -2001,11 +2007,11 @@ class VirtualRenderer {
             if (_self.theme)
                 dom.removeCssClass(_self.container, _self.theme.cssClass);
             /**@type {any}*/
-            var padding = "padding" in module ? module.padding 
+            var padding = "padding" in module ? module.padding
                 : "padding" in (_self.theme || {}) ? 4 : _self.$padding;
             if (_self.$padding && padding != _self.$padding)
                 _self.setPadding(padding);
-                
+
             // this is kept only for backwards compatibility
             _self.$theme = module.cssClass;
 
@@ -2074,14 +2080,14 @@ class VirtualRenderer {
     setMouseCursor(cursorStyle) {
         dom.setStyle(this.scroller.style, "cursor", cursorStyle);
     }
-    
+
     attachToShadowRoot() {
         dom.importCssString(editorCss, "ace_editor.css", this.container);
     }
 
     /**
      * Destroys the text and cursor layers for this renderer.
-     
+
      **/
     destroy() {
         this.freeze();
@@ -2093,7 +2099,7 @@ class VirtualRenderer {
     }
 
     /**
-     * 
+     *
      * @param {boolean} [val]
      */
     $updateCustomScrollbar(val) {
@@ -2134,7 +2140,7 @@ class VirtualRenderer {
     }
 
     /**
-     
+
      */
     $addResizeObserver() {
         if (!window.ResizeObserver || this.$resizeObserver) return;
@@ -2221,7 +2227,7 @@ config.defineOptions(VirtualRenderer.prototype, "renderer", {
             this.$updatePrintMargin();
         },
         get: function() {
-            return this.$showPrintMargin && this.$printMarginColumn; 
+            return this.$showPrintMargin && this.$printMarginColumn;
         }
     },
     showGutter: {

@@ -264,6 +264,11 @@ function insertPendingStyles() {
     });
 }
 
+/**
+ * @param {string} cssText
+ * @param {string} [id]
+ * @param {any} [target]
+ */
 function importCssString(cssText, id, target) {
     if (typeof document == "undefined")
         return;
