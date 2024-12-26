@@ -419,10 +419,10 @@ class VirtualRenderer {
             size.scrollerWidth = Math.max(0, width - gutterWidth - this.scrollBarV.getWidth() - this.margin.h);
             dom.setStyle(this.$gutter.style, "left", this.margin.left + "px");
 
-            var right = this.scrollBarV.getWidth() + "px";
+            var right = "0px";
             dom.setStyle(this.scrollBarH.element.style, "right", right);
             dom.setStyle(this.scroller.style, "right", right);
-            dom.setStyle(this.scroller.style, "bottom", this.scrollBarH.getHeight());
+            dom.setStyle(this.scroller.style, "bottom", "0px");
 
             this.scrollBarH.setWidth(size.scrollerWidth);
 

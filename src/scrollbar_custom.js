@@ -7,17 +7,16 @@ var EventEmitter = require("./lib/event_emitter").EventEmitter;
 
 dom.importCssString(`.ace_editor>.ace_sb-v div, .ace_editor>.ace_sb-h div{
   position: absolute;
-  background: rgba(128, 128, 128, 0.6);
+  background: rgba(76, 138, 255, 0.6);
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-  border: 1px solid #bbb;
-  border-radius: 2px;
+  border-radius: 6px;
   z-index: 8;
 }
 .ace_editor>.ace_sb-v, .ace_editor>.ace_sb-h {
   position: absolute;
   z-index: 6;
-  background: none;
+  background: rgba(128, 128, 128, 0.2);
   overflow: hidden!important;
 }
 .ace_editor>.ace_sb-v {
@@ -35,6 +34,7 @@ dom.importCssString(`.ace_editor>.ace_sb-v div, .ace_editor>.ace_sb-h div{
   bottom: 0;
   left: 0;
   height: 12px;
+  display: none;
 }
 .ace_editor>.ace_sb-h div {
   bottom: 0;
@@ -99,8 +99,83 @@ class VScrollBar extends ScrollBar {
         this.parent = parent;
         this.width = this.VScrollWidth;
         this.renderer = renderer;
-        this.inner.style.width = this.element.style.width = (this.width || 15) + "px";
+        this.inner.style.width = this.element.style.width = this.width + "px";
         this.$minWidth = 0;
+        
+        event.addListener(this.element, "touchstart", (e)=>{
+            // console.log("scrollbar: onTouchDown element");
+            event.stopEvent(e);
+            e = event.getEvent(e);
+            try {
+                //@ts-ignore
+                AndroidEditor.hideContextMenu();
+            } catch (e) { }
+            var top = e.clientY - this.element.getBoundingClientRect().top - this.thumbHeight / 2;
+            this._emit("scroll", {data: this.scrollTopFromThumbTop(top)});
+            return event.preventDefault(e);
+        });
+        event.addListener(this.inner, "touchstart", (e)=>{
+            this.onThumbTouchStart(e);
+        });
+        event.addListener(this.inner, "touchmove", (e)=>{
+            this.onThumbTouchMove(e);
+        });
+        event.addListener(this.inner, "touchcancel", (e)=>{
+            this.onThumbTouchEnd(e);
+        });
+        event.addListener(this.inner, "touchend", (e)=>{
+            this.onThumbTouchEnd(e);
+        });
+    }
+
+    onThumbTouchEnd(e) {
+        // console.log("scrollbar: onThumbTouchEnd");
+        this.isThumbTouching = false;
+        if (this.thumbTouchTimer != undefined) {
+            clearInterval(this.thumbTouchTimer);
+        }
+        try {
+            //@ts-ignore
+            AndroidEditor.scrollbarReleased();
+        } catch (e) { }
+    }
+
+    onThumbTouchMove(e) {
+        event.stopEvent(e);
+        e = event.getEvent(e);
+        this.thumbTouchPageY = e.clientY;
+        // console.log("scrollbar: thumb touchmove touchPageY="+this.thumbTouchPageY);
+    }
+
+    thumbTouchPageY = undefined;
+    thumbTouchTimer = undefined;
+    isThumbTouching = false;
+
+    onThumbTouchStart(e) {
+        // console.log("scrollbar: onThumbTouchStart");
+        this.isThumbTouching = true;
+        event.stopEvent(e);
+        e = event.getEvent(e);
+        
+        try {
+            //@ts-ignore
+            AndroidEditor.hideContextMenu();
+        } catch (e) { }
+        try {
+            //@ts-ignore
+            AndroidEditor.scrollbarTouched();
+        } catch (e) { }
+        const startY = e.clientY;
+        const startTop = this.thumbTop;
+
+        const onScrollInterval = () => {
+            if (this.thumbTouchPageY === undefined) return;
+            const scrollTop = this.scrollTopFromThumbTop(startTop + this.thumbTouchPageY - startY);
+            if (scrollTop === this.scrollTop) return;
+            this._emit("scroll", {data: scrollTop});
+        };
+
+        this.thumbTouchTimer = setInterval(onScrollInterval, 20);
     }
 
     /**
@@ -194,7 +269,7 @@ class VScrollBar extends ScrollBar {
     setScrollHeight(height, force) {
         if (this.pageHeight === height && !force) return;
         this.pageHeight = height;
-        this.thumbHeight = this.slideHeight * this.viewHeight / this.pageHeight;
+        this.thumbHeight = 60;
 
         if (this.thumbHeight > this.slideHeight) this.thumbHeight = this.slideHeight;
         if (this.thumbHeight < 15) this.thumbHeight = 15;
