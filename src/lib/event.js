@@ -103,6 +103,16 @@ exports.capture = function(el, eventHandler, releaseCaptureHandler) {
     return onMouseUp;
 };
 
+
+exports.getEvent = function(e) {
+    if (e instanceof TouchEvent) {
+        var touch = e.touches[0] || e.changedTouches[0];
+        return touch;
+    } else {
+        return e;
+    }
+}
+
 /**
  * @param el
  * @param callback
