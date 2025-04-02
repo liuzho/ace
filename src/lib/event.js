@@ -332,6 +332,12 @@ if (typeof window == "object" && window.postMessage && !useragent.isOldIE) {
 }
 
 exports.$idleBlocked = false;
+/**
+ *
+ * @param {CallableFunction} cb
+ * @param {number} timeout
+ * @return {ReturnType<typeof setTimeout>}
+ */
 exports.onIdle = function(cb, timeout) {
     return setTimeout(function handler() {
         if (!exports.$idleBlocked) {
@@ -342,7 +348,9 @@ exports.onIdle = function(cb, timeout) {
     }, timeout);
 };
 
+/**@type {null | ReturnType<typeof setTimeout>}*/
 exports.$idleBlockId = null;
+/** @arg [delay] {null | number} */
 exports.blockIdle = function(delay) {
     if (exports.$idleBlockId)
         clearTimeout(exports.$idleBlockId);
