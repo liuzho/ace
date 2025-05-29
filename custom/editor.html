@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Editor</title>
+    <style type="text/css" media="screen">
+        body {
+            overflow: hidden;
+        }
+
+        #editor {
+            margin: 0;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+    </style>
+</head>
+<body>
+
+<pre id="editor"></pre>
+
+<script src="src-min/ace.js" type="text/javascript" charset="utf-8"></script>
+<script src="src-min/ext-modelist.js" type="text/javascript" charset="utf-8"></script>
+<script src="ace-bridge.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+    var editor = ace.edit("editor");
+    editor.setOption("indentedSoftWrap", false);
+    editor.setOption("enableMobileMenu", false);
+    editor.setOption("enableAutoIndent", true);
+    editor.setOption("customScrollbar", true);
+
+    var bridge = new Bridge(editor);
+    bridge.bindEditorEventToJava();
+
+
+    function returnToAndroid(id, value) {
+        if (id === 0) {
+            return value;
+        }
+        AndroidEditor.returnValue(id, value);
+        return null;
+    }
+
+    function handleJava(id, editorCommand) {
+        console.log("handleJava="+id);
+        if (!editorCommand.cmd) return;
+        var data = editorCommand.data;
+
+        var result = bridge.execCommand(editorCommand.cmd, editorCommand.data);
+        console.log("cmd="+editorCommand.cmd+" result="+result);
+        return returnToAndroid(id, result === undefined ? null : result);
+    }
+
+</script>
+
+</body>
+</html>
