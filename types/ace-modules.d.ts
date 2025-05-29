@@ -375,7 +375,7 @@ declare module "ace-code/src/config" {
             string
         ], onLoad: (module: any) => void) => void;
         setModuleLoader: (moduleName: any, onLoad: any) => void;
-        version: "1.39.1";
+        version: "1.41.0";
     };
     export = _exports;
 }
@@ -818,18 +818,21 @@ declare module "ace-code/src/css/editor-css" {
 declare module "ace-code/src/layer/decorators" {
     export class Decorator {
         constructor(parent: any, renderer: any);
+        parentEl: any;
         canvas: HTMLCanvasElement;
         renderer: any;
         pixelRatio: number;
         maxHeight: any;
         lineHeight: any;
-        canvasHeight: any;
-        heightRatio: number;
-        canvasWidth: any;
         minDecorationHeight: number;
         halfMinDecorationHeight: number;
         colors: {};
-        compensateFoldRows(row: any, foldData: any): number;
+        compensateFoldRows(row: any): number;
+        compensateLineWidgets(row: any): number;
+        setDimensions(config: any): void;
+        canvasHeight: any;
+        heightRatio: number;
+        canvasWidth: any;
     }
 }
 declare module "ace-code/src/virtual_renderer" {
@@ -2036,13 +2039,13 @@ declare module "ace-code/src/editor" {
          * @param {Partial<import("ace-code").Ace.EditorOptions>} [options] The default options
          **/
         constructor(renderer: VirtualRenderer, session?: EditSession, options?: Partial<import("ace-code").Ace.EditorOptions>);
+        id: string;
         session: EditSession;
         container: HTMLElement & {
             env?: any;
             value?: any;
         };
         renderer: VirtualRenderer;
-        id: string;
         commands: CommandManager;
         textInput: any;
         keyBinding: KeyBinding;
@@ -2123,9 +2126,10 @@ declare module "ace-code/src/editor" {
         /**
          * {:VirtualRenderer.setStyle}
          * @param {String} style A class name
+         * @param {boolean} [incluude] pass false to remove the class name
          * @related VirtualRenderer.setStyle
          **/
-        setStyle(style: string): void;
+        setStyle(style: string, incluude?: boolean): void;
         /**
          * {:VirtualRenderer.unsetStyle}
          * @related VirtualRenderer.unsetStyle
@@ -3313,6 +3317,49 @@ declare module "ace-code/src/autocomplete" {
         completions: Ace.FilteredList;
     }
 }
+declare module "ace-code/src/marker_group" {
+    export type EditSession = import("ace-code/src/edit_session").EditSession;
+    export type MarkerGroupItem = {
+        range: import("ace-code/src/range").Range;
+        className: string;
+    };
+    export type LayerConfig = import("ace-code").Ace.LayerConfig;
+    export type Marker = import("ace-code/src/layer/marker").Marker;
+    export class MarkerGroup {
+        /**
+         * @param {{markerType: "fullLine" | "line" | undefined}} [options] Options controlling the behvaiour of the marker.
+         * User `markerType` to control how the markers which are part of this group will be rendered:
+         * - `undefined`: uses `text` type markers where only text characters within the range will be highlighted.
+         * - `fullLine`: will fully highlight all the rows within the range, including the characters before and after the range on the respective rows.
+         * - `line`: will fully highlight the lines within the range but will only cover the characters between the start and end of the range.
+         */
+        constructor(session: EditSession, options?: {
+            markerType: "fullLine" | "line" | undefined;
+        });
+        markerType: "line" | "fullLine";
+        markers: import("ace-code").Ace.MarkerGroupItem[];
+        session: EditSession;
+        /**
+         * Finds the first marker containing pos
+         */
+        getMarkerAtPosition(pos: import("ace-code").Ace.Point): import("ace-code").Ace.MarkerGroupItem | undefined;
+        /**
+         * Comparator for Array.sort function, which sorts marker definitions by their positions
+         *
+         * @param {MarkerGroupItem} a first marker.
+         * @param {MarkerGroupItem} b second marker.
+         * @returns {number} negative number if a should be before b, positive number if b should be before a, 0 otherwise.
+         */
+        markersComparator(a: MarkerGroupItem, b: MarkerGroupItem): number;
+        /**
+         * Sets marker definitions to be rendered. Limits the number of markers at MAX_MARKERS.
+         * @param {MarkerGroupItem[]} markers an array of marker definitions.
+         */
+        setMarkers(markers: MarkerGroupItem[]): void;
+        update(html: any, markerLayer: Marker, session: EditSession, config: LayerConfig): void;
+        MAX_MARKERS: number;
+    }
+}
 declare module "ace-code/src/autocomplete/text_completer" {
     export function getCompletions(editor: any, session: any, pos: any, prefix: any, callback: any): void;
 }
@@ -3416,49 +3463,6 @@ declare module "ace-code/src/occur" {
     }
     import { Search } from "ace-code/src/search";
     import { EditSession } from "ace-code/src/edit_session";
-}
-declare module "ace-code/src/marker_group" {
-    export type EditSession = import("ace-code/src/edit_session").EditSession;
-    export type MarkerGroupItem = {
-        range: import("ace-code/src/range").Range;
-        className: string;
-    };
-    export type LayerConfig = import("ace-code").Ace.LayerConfig;
-    export type Marker = import("ace-code/src/layer/marker").Marker;
-    export class MarkerGroup {
-        /**
-         * @param {{markerType: "fullLine" | "line" | undefined}} [options] Options controlling the behvaiour of the marker.
-         * User `markerType` to control how the markers which are part of this group will be rendered:
-         * - `undefined`: uses `text` type markers where only text characters within the range will be highlighted.
-         * - `fullLine`: will fully highlight all the rows within the range, including the characters before and after the range on the respective rows.
-         * - `line`: will fully highlight the lines within the range but will only cover the characters between the start and end of the range.
-         */
-        constructor(session: EditSession, options?: {
-            markerType: "fullLine" | "line" | undefined;
-        });
-        markerType: "line" | "fullLine";
-        markers: import("ace-code").Ace.MarkerGroupItem[];
-        session: EditSession;
-        /**
-         * Finds the first marker containing pos
-         */
-        getMarkerAtPosition(pos: import("ace-code").Ace.Point): import("ace-code").Ace.MarkerGroupItem | undefined;
-        /**
-         * Comparator for Array.sort function, which sorts marker definitions by their positions
-         *
-         * @param {MarkerGroupItem} a first marker.
-         * @param {MarkerGroupItem} b second marker.
-         * @returns {number} negative number if a should be before b, positive number if b should be before a, 0 otherwise.
-         */
-        markersComparator(a: MarkerGroupItem, b: MarkerGroupItem): number;
-        /**
-         * Sets marker definitions to be rendered. Limits the number of markers at MAX_MARKERS.
-         * @param {MarkerGroupItem[]} markers an array of marker definitions.
-         */
-        setMarkers(markers: MarkerGroupItem[]): void;
-        update(html: any, markerLayer: Marker, session: EditSession, config: LayerConfig): void;
-        MAX_MARKERS: number;
-    }
 }
 declare module "ace-code/src/edit_session/fold" {
     export class Fold extends RangeList {
@@ -3948,6 +3952,28 @@ declare module "ace-code/src/edit_session" {
          * @param {String} className The class to add
          **/
         addGutterDecoration(row: number, className: string): void;
+        /**
+         * Replaces the custom icon with the fold widget if present from a specific row in the gutter
+         * @param {number} row The row number for which to hide the custom icon
+         * @experimental
+         */
+        removeGutterCustomWidget(row: number): void;
+        /**
+         * Replaces the fold widget if present with the custom icon from a specific row in the gutter
+         * @param {number} row - The row number where the widget will be displayed
+         * @param {Object} attributes - Configuration attributes for the widget
+         * @param {string} attributes.className - CSS class name for styling the widget
+         * @param {string} attributes.label - Text label to display in the widget
+         * @param {string} attributes.title - Tooltip text for the widget
+         * @param {Object} attributes.callbacks - Event callback functions for the widget e.g onClick;
+         * @experimental
+        */
+        addGutterCustomWidget(row: number, attributes: {
+            className: string;
+            label: string;
+            title: string;
+            callbacks: any;
+        }): void;
         /**
          * Removes `className` from the `row`.
          * @param {Number} row The row number
