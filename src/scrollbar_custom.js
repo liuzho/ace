@@ -101,15 +101,15 @@ class VScrollBar extends ScrollBar {
         this.renderer = renderer;
         this.inner.style.width = this.element.style.width = this.width + "px";
         this.$minWidth = 0;
+        this.thumbTouchPageY = undefined;
+        this.thumbTouchTimer = undefined;
+        this.isThumbTouching = false;
         
         event.addListener(this.element, "touchstart", (e)=>{
             // console.log("scrollbar: onTouchDown element");
             event.stopEvent(e);
             e = event.getEvent(e);
-            try {
-                //@ts-ignore
-                AndroidEditor.hideContextMenu();
-            } catch (e) { }
+            event.callAndroidEditor("hideContextMenu");
             var top = e.clientY - this.element.getBoundingClientRect().top - this.thumbHeight / 2;
             this._emit("scroll", {data: this.scrollTopFromThumbTop(top)});
             return event.preventDefault(e);
@@ -134,10 +134,7 @@ class VScrollBar extends ScrollBar {
         if (this.thumbTouchTimer != undefined) {
             clearInterval(this.thumbTouchTimer);
         }
-        try {
-            //@ts-ignore
-            AndroidEditor.scrollbarReleased();
-        } catch (e) { }
+        event.callAndroidEditor("scrollbarReleased");
     }
 
     onThumbTouchMove(e) {
@@ -147,24 +144,14 @@ class VScrollBar extends ScrollBar {
         // console.log("scrollbar: thumb touchmove touchPageY="+this.thumbTouchPageY);
     }
 
-    thumbTouchPageY = undefined;
-    thumbTouchTimer = undefined;
-    isThumbTouching = false;
-
     onThumbTouchStart(e) {
         // console.log("scrollbar: onThumbTouchStart");
         this.isThumbTouching = true;
         event.stopEvent(e);
         e = event.getEvent(e);
         
-        try {
-            //@ts-ignore
-            AndroidEditor.hideContextMenu();
-        } catch (e) { }
-        try {
-            //@ts-ignore
-            AndroidEditor.scrollbarTouched();
-        } catch (e) { }
+        event.callAndroidEditor("hideContextMenu");
+        event.callAndroidEditor("scrollbarTouched");
         const startY = e.clientY;
         const startTop = this.thumbTop;
 

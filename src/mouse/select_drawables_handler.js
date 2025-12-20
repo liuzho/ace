@@ -27,6 +27,10 @@ class SelectDrawableEventHandler {
 
     constructor(defaultHandler, mouseHandler, selectors) {
         this.editor = mouseHandler.editor;
+        this.leftDownX = 0;
+        this.leftDownY = 0;
+        this.leftDownXOffset = 0;
+        this.leftDownYOffset = 0;
 
         var _self = this;
 
@@ -42,10 +46,7 @@ class SelectDrawableEventHandler {
             selectors.cancelMidTimeout();
             event.stopEvent(e);
 
-            try {
-                //@ts-ignore
-                AndroidEditor.hideContextMenu();
-            } catch (e) { }
+            event.callAndroidEditor("hideContextMenu");
 
             e = _self.getEvent(e);
             midDownX = e.clientX;
@@ -53,8 +54,6 @@ class SelectDrawableEventHandler {
 
             // console.log("liuzh: handler.start.mid: x="+e.clientX+", y="+e.clientY);
             
-
-            var target = _self.editor.renderer.getMouseEventTarget();
 
             var mouseEvent = new MouseEvent(e, _self.editor);
             mouseEvent.x = mouseEvent.clientX = dom.getElemLeft(this) + this.clientWidth / 2 - _self.editor.renderer.scrollLeft;
@@ -71,7 +70,7 @@ class SelectDrawableEventHandler {
             // p.style.top = mouseEvent.y+"px";
 
             defaultHandler.onMouseDown.call(mouseHandler, mouseEvent);
-        }
+        };
 
         event.addListener(selectors.selectHandleMid, "touchstart", onMidTouchStart);
 
@@ -90,7 +89,7 @@ class SelectDrawableEventHandler {
 
         var onMidTouchEnd = function (e) {
             selectors.hideMidSelectHandleTimeout();
-        }
+        };
 
         event.addListener(selectors.selectHandleMid, "touchend", onMidTouchEnd);
         event.addListener(selectors.selectHandleMid, "touchcancel", onMidTouchEnd);
@@ -114,20 +113,13 @@ class SelectDrawableEventHandler {
             var setMode = require("./touch_handler").setMode;
             setMode("");
 
-            try {
-                // @ts-ignore p1:x p2:y
-                AndroidEditor.showContextMenu(transX + startCursorLeft, transY + startCursorTop);
-                var hideMenu = function () {
-                    try{
-                        // @ts-ignore
-                        AndroidEditor.hideContextMenu();
-                    }catch(e){}
-                    _self.editor.off("input", hideMenu);
-                }
-                _self.editor.on("input", hideMenu);
-                return;
-            }catch(e){}
-        }
+            event.callAndroidEditor("showContextMenu", transX + startCursorLeft, transY + startCursorTop);
+            var hideMenu = function () {
+                event.callAndroidEditor("hideContextMenu");
+                _self.editor.off("input", hideMenu);
+            };
+            _self.editor.on("input", hideMenu);
+        };
 
         event.addListener(selectors.selectHandleLeft, "touchstart", onTouchStart);
         event.addListener(selectors.selectHandleLeft, "touchmove", onTouchMove);
@@ -141,17 +133,9 @@ class SelectDrawableEventHandler {
     }
 
     getEvent(e) {
-        if (e instanceof TouchEvent) {
-            var touch = e.touches[0] || e.changedTouches[0];
-            return touch;
-        } else
-            return e;
+        var touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+        return touch || e;
     }
-
-    leftDownX = 0;
-    leftDownY = 0;
-    leftDownXOffset = 0;
-    leftDownYOffset = 0;
 
     onTouchStart(e) {
         // console.log("liuzh: onTouchStart.");
@@ -159,10 +143,7 @@ class SelectDrawableEventHandler {
         event.stopEvent(e);
         e = this.getEvent(e);
 
-        try {
-            //@ts-ignore
-            AndroidEditor.hideContextMenu();
-        } catch (e) { }
+        event.callAndroidEditor("hideContextMenu");
 
         var selectors = this.editor.renderer.$selectorLayer;
         selectors.ignoreUpdate = true;
@@ -212,7 +193,7 @@ class SelectDrawableEventHandler {
             auchorColumn = lead.column;
         }
         // console.log("onTouchStart: auchorRow=" + auchorRow + ", auchorColumn=" + auchorColumn);
-    };
+    }
 
     onTouchMove(e) {
         event.stopEvent(e);
@@ -258,7 +239,7 @@ class SelectDrawableEventHandler {
         this.editor.selection.setSelectionAnchor(auchorRow, auchorColumn);
         this.editor.selection.selectToPosition(pos);
         this.editor.renderer.scrollCursorIntoView();
-    };
+    }
 
 }
 

@@ -33,8 +33,10 @@ class DefaultHandlers {
 
         mouseHandler["selectByLines"] = this.extendSelectionBy.bind(mouseHandler, "getLineRange");
         mouseHandler["selectByWords"] = this.extendSelectionBy.bind(mouseHandler, "getWordRange");
-        
-        new SelectDrawableEventHandler(this, mouseHandler, editor.renderer.$selectorLayer);
+        var selectorLayer = editor.renderer.$selectorLayer;
+        if (selectorLayer && selectorLayer.selectHandleMid) {
+            new SelectDrawableEventHandler(this, mouseHandler, selectorLayer);
+        }
 
     }
 
@@ -49,7 +51,8 @@ class DefaultHandlers {
         var editor = this.editor;
 
         var selectors = this.editor.renderer.$selectorLayer;
-        selectors.showMidSelectHandle();
+        if (selectors && selectors.showMidSelectHandle)
+            selectors.showMidSelectHandle();
 
         var button = ev.getButton();
         if (button !== 0) {

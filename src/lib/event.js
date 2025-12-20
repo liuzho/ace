@@ -105,13 +105,22 @@ exports.capture = function(el, eventHandler, releaseCaptureHandler) {
 
 
 exports.getEvent = function(e) {
-    if (e instanceof TouchEvent) {
-        var touch = e.touches[0] || e.changedTouches[0];
-        return touch;
-    } else {
-        return e;
-    }
-}
+    var touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+    return touch || e;
+};
+
+exports.callAndroidEditor = function(methodName) {
+    if (typeof window != "object")
+        return;
+    var nativeEditor = window["AndroidEditor"];
+    if (!nativeEditor)
+        return;
+    var fn = nativeEditor[methodName];
+    if (typeof fn != "function")
+        return;
+    var args = Array.prototype.slice.call(arguments, 1);
+    return fn.apply(nativeEditor, args);
+};
 
 /**
  * @param el

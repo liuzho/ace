@@ -7,13 +7,14 @@ class SelectHandleDrawables {
     constructor(cursor) {
         this.isMidVisible = false;
         this.isLRVisible = false;
+        this.ignoreUpdate = false;
         this.element = cursor.element;
         this.cursor = cursor;
 
         this.hideMidTimeout = undefined;
 
         this.addSelectHandle();
-    };
+    }
 
     onSelectionChange(e) {
         if (this.config) {
@@ -55,9 +56,10 @@ class SelectHandleDrawables {
         this.selectHandleRight.className = "ace_select_handle ace_r_select_handle";
         this.selectHandleRight.style.display = "none";
         this.selectHandleRight.src = "img/text_select_handle_right.png";
+
         this.element.appendChild(this.selectHandleRight);
 
-    };
+    }
 
     showMidSelectHandle() {
         this.cancelMidTimeout();
@@ -65,19 +67,19 @@ class SelectHandleDrawables {
         this.selectHandleMid.style.display = "";
         this.hideLeftRightSelectHandle();
         this.hideMidSelectHandleTimeout();
-    };
+    }
 
     showLeftRightSelectHandle() {
         this.isLRVisible = true;
         this.selectHandleLeft.style.display = "";
         this.selectHandleRight.style.display = "";
         this.hideMidSelectHandle();
-    };
+    }
 
     hideMidSelectHandle() {
         this.selectHandleMid.style.display = "none";
         this.isMidVisible = false;
-    };
+    }
 
     hideMidSelectHandleTimeout() {
         this.cancelMidTimeout();
@@ -97,9 +99,7 @@ class SelectHandleDrawables {
         this.selectHandleLeft.style.display = "none";
         this.selectHandleRight.style.display = "none";
         this.isLRVisible = false;
-    };
-
-    ignoreUpdate = false;
+    }
 
     update(config) {
 
@@ -156,11 +156,11 @@ class SelectHandleDrawables {
 
             if (!this.isLRVisible) this.showLeftRightSelectHandle();
         }
-    };
+    }
 
     destroy() {
 
-    };
+    }
 }
 
 exports.SelectHandleDrawables = SelectHandleDrawables;

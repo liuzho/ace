@@ -24,6 +24,12 @@ exports.addTouchListeners = function(el, editor) {
     var vY = 0;
     var pressed;
     var contextMenu;
+    var didLongTap = false;
+    
+    function hasNativeMenu() {
+        var nativeEditor = window["AndroidEditor"];
+        return nativeEditor && typeof nativeEditor.showContextMenu === "function";
+    }
     
     function createContextMenu() {
         var clipboard = window.navigator && window.navigator.clipboard;
@@ -114,7 +120,20 @@ exports.addTouchListeners = function(el, editor) {
     // var pointerTimeout;
 
     function showContextMenu(opts) {
-        // console.log("liuzh: showContextMenu: selection.isEmpty="+editor.selection.isEmpty());
+        if (hasNativeMenu()) {
+            var cursorLayer = editor.renderer.$cursorLayer;
+            var config = editor.renderer.layerConfig;
+            var point = opts && opts.longtap && pos ? pos : editor.selection.getSelectionLead();
+            var screenPos = cursorLayer.session.documentToScreenPosition(point);
+            var cursorLeft = cursorLayer.$padding + screenPos.column * config.characterWidth;
+            var cursorTop = (screenPos.row - config.firstRowScreen) * config.lineHeight;
+            var transX = dom.getElemLeft(cursorLayer.element) - editor.renderer.scrollLeft;
+            var transY = dom.getElemTop(cursorLayer.element) - editor.renderer.layerConfig.offset;
+            event.callAndroidEditor("showContextMenu", transX + cursorLeft, transY + cursorTop);
+            editor.off("input", hideContextMenu);
+            editor.on("input", hideContextMenu);
+            return;
+        }
         var lead = editor.selection.getSelectionLead();
         var anchor = editor.selection.getSelectionAnchor();
         var start, end;
@@ -145,12 +164,11 @@ exports.addTouchListeners = function(el, editor) {
             //     pointerTimeout = undefined;
             // }
            
-            try {
-                // @ts-ignore p1:x p2:y
-                AndroidEditor.showContextMenu(transX + startCursorLeft, transY + startCursorTop);
+            if (hasNativeMenu()) {
+                event.callAndroidEditor("showContextMenu", transX + startCursorLeft, transY + startCursorTop);
                 editor.on("input", hideContextMenu);
                 return;
-            }catch(e){}
+            }
     
         } else if(opts&&opts.longtap && pos) {
             var startCursorLeft = cursor.$padding + pos.column * config.characterWidth;
@@ -160,12 +178,11 @@ exports.addTouchListeners = function(el, editor) {
             // p.style.top = (transY + startCursorTop - p.clientHeight) + "px";
             // p.style.opacity = "0.5";
           
-            try {
-                // @ts-ignore p1:x p2:y
-                AndroidEditor.showContextMenu(transX + startCursorLeft, transY + startCursorTop);
+            if (hasNativeMenu()) {
+                event.callAndroidEditor("showContextMenu", transX + startCursorLeft, transY + startCursorTop);
                 editor.on("input", hideContextMenu);
                 return;
-            }catch(e){}
+            }
             return;
         }
         if (!editor.getOption("enableMobileMenu")) {
@@ -193,14 +210,7 @@ exports.addTouchListeners = function(el, editor) {
         editor.on("input", hideContextMenu);
     }
     function hideContextMenu(e) {
-        // console.log("liuzh: hideContextMenu");
-        try{
-            // @ts-ignore
-            AndroidEditor.hideContextMenu();
-            editor.off("input", hideContextMenu);
-            return;
-        }catch(e){}
-
+        event.callAndroidEditor("hideContextMenu");
         if (contextMenu)
             contextMenu.style.display = "none";
         editor.off("input", hideContextMenu);
@@ -216,6 +226,7 @@ exports.addTouchListeners = function(el, editor) {
             editor.selection.selectWord();
         }
         mode = "wait";
+        didLongTap = true;
         showContextMenu({longtap: true});
     }
     function switchToSelectionMode() {
@@ -336,9 +347,11 @@ exports.addTouchListeners = function(el, editor) {
             animate();
             // console.log("liuzh: touched-hideContextMenu-2, el="+el.id);
             hideContextMenu();
+        } else if (didLongTap) {
         } else {
             showContextMenu();
         }
+        didLongTap = false;
         clearTimeout(longTouchTimer);
         longTouchTimer = null;
     }, editor);

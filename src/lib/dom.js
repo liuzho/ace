@@ -9,32 +9,24 @@ var XHTML_NS = "http://www.w3.org/1999/xhtml";
  * @returns {number}
  */
 exports.getElemLeft = function(element) {
-    var actualLeft = element.offsetLeft;
-    var current = element.offsetParent;
-
-    while (current !== null && current != undefined) {
-        actualLeft += current.offsetLeft;
-        current = current.offsetParent;
-    }
-
-    return actualLeft;
-}
+    var rect = element.getBoundingClientRect();
+    var doc = element.ownerDocument;
+    var win = doc && doc.defaultView;
+    var scrollLeft = win ? (win.pageXOffset || doc.documentElement.scrollLeft || 0) : 0;
+    return rect.left + scrollLeft;
+};
 
 /**
  * @param {HTMLElement} element 
  * @returns {number}
  */
 exports.getElemTop = function(element) {
-    var actualTop = element.offsetTop;
-    var current = element.offsetParent;
-
-    while (current !== null && current != undefined) {
-        actualTop += current.offsetTop;
-        current = current.offsetParent;
-    }
-
-    return actualTop;
-}
+    var rect = element.getBoundingClientRect();
+    var doc = element.ownerDocument;
+    var win = doc && doc.defaultView;
+    var scrollTop = win ? (win.pageYOffset || doc.documentElement.scrollTop || 0) : 0;
+    return rect.top + scrollTop;
+};
 
 
 /**
