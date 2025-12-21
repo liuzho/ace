@@ -113,10 +113,8 @@ exports.addTouchListeners = function(el, editor) {
                     var scrollTop = win ? (win.pageYOffset || doc.documentElement.scrollTop || 0) : 0;
                     var x = opts.clientX + scrollLeft;
                     var y = opts.clientY + scrollTop;
-                    if (opts.longtap) {
-                        var layerConfig = editor.renderer && editor.renderer.layerConfig;
-                        y -= Math.round(layerConfig && layerConfig.lineHeight ? layerConfig.lineHeight * 1.5 : 24);
-                    }
+                    var layerConfig = editor.renderer && editor.renderer.layerConfig;
+                    y -= Math.round(layerConfig && layerConfig.lineHeight ? layerConfig.lineHeight * 2.5 : 30);
                     var rect = editor.container && editor.container.getBoundingClientRect && editor.container.getBoundingClientRect();
                     if (rect && rect.right > rect.left && rect.bottom > rect.top) {
                         var pageLeft = rect.left + scrollLeft;
@@ -134,15 +132,28 @@ exports.addTouchListeners = function(el, editor) {
                     return;
                 }
             }
-            var cursorLayer = editor.renderer.$cursorLayer;
-            var config = editor.renderer.layerConfig;
             var point = opts && opts.longtap && pos ? pos : editor.selection.getSelectionLead();
-            var screenPos = cursorLayer.session.documentToScreenPosition(point);
-            var cursorLeft = cursorLayer.$padding + screenPos.column * config.characterWidth;
-            var cursorTop = (screenPos.row - config.firstRowScreen) * config.lineHeight;
-            var transX = dom.getElemLeft(cursorLayer.element) - editor.renderer.scrollLeft;
-            var transY = dom.getElemTop(cursorLayer.element) - editor.renderer.layerConfig.offset;
-            event.callAndroidEditor("showContextMenu", transX + cursorLeft, transY + cursorTop);
+            var screen = editor.renderer.textToScreenCoordinates(point.row, point.column);
+            var doc = editor.container && editor.container.ownerDocument;
+            var win = doc && doc.defaultView;
+            var scrollLeft = win ? (win.pageXOffset || doc.documentElement.scrollLeft || 0) : 0;
+            var scrollTop = win ? (win.pageYOffset || doc.documentElement.scrollTop || 0) : 0;
+            var x = screen.pageX + scrollLeft;
+            var y = screen.pageY + scrollTop;
+            var layerConfig = editor.renderer && editor.renderer.layerConfig;
+            y -= Math.round(layerConfig && layerConfig.lineHeight ? layerConfig.lineHeight * 1.5 : 24);
+            var rect = editor.container && editor.container.getBoundingClientRect && editor.container.getBoundingClientRect();
+            if (rect && rect.right > rect.left && rect.bottom > rect.top) {
+                var pageLeft = rect.left + scrollLeft;
+                var pageRight = rect.right + scrollLeft;
+                var pageTop = rect.top + scrollTop;
+                var pageBottom = rect.bottom + scrollTop;
+                if (x < pageLeft) x = pageLeft;
+                if (x > pageRight) x = pageRight;
+                if (y < pageTop) y = pageTop;
+                if (y > pageBottom) y = pageBottom;
+            }
+            event.callAndroidEditor("showContextMenu", x, y);
             editor.off("input", hideContextMenu);
             editor.on("input", hideContextMenu);
             return;

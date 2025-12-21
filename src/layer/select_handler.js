@@ -14,6 +14,7 @@ class SelectHandleDrawables {
         this.hideMidTimeout = undefined;
 
         this.addSelectHandle();
+        this.$onSelectionChange = this.onSelectionChange.bind(this);
     }
 
     onSelectionChange(e) {
@@ -27,10 +28,12 @@ class SelectHandleDrawables {
      */
     setSession(session) {
         if (this.session) {
-            this.session.selection.off("changeSelection", this.onSelectionChange.bind(this));
+            this.session.selection.off("changeSelection", this.$onSelectionChange);
         }
         this.session = session;
-        this.session.selection.on("changeSelection", this.onSelectionChange.bind(this));
+        if (this.session) {
+            this.session.selection.on("changeSelection", this.$onSelectionChange);
+        }
     }
 
     setAceEditor(editor) {
@@ -114,7 +117,9 @@ class SelectHandleDrawables {
             return;
         }
 
-        var selection = this.cursor.session.selection;
+        var selection = this.session && this.session.selection;
+        if (!selection)
+            return;
 
         var lead = selection.getSelectionLead();
         var anchor = selection.getSelectionAnchor();

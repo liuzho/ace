@@ -56,11 +56,8 @@ class SelectDrawableEventHandler {
             
 
             var mouseEvent = new MouseEvent(e, _self.editor);
-            mouseEvent.x = mouseEvent.clientX = dom.getElemLeft(this) + this.clientWidth / 2 - _self.editor.renderer.scrollLeft;
-            // console.log("me.x=" + mouseEvent.x + ", me.clentX=" + mouseEvent.clientX);
-            mouseEvent.y = mouseEvent.clientY = e.clientY - _self.editor.renderer.layerConfig.lineHeight / 3 - (e.clientY - dom.getElemTop(this)) - _self.editor.renderer.layerConfig.offset;
-            // console.log("me.y=" + mouseEvent.y + ", me.clentY=" + mouseEvent.clientY);
-            // console.log("liuzh: midTop="+dom.getElemTop(this)+", diff="+(e.clientY - dom.getElemTop(this)));
+            mouseEvent.x = mouseEvent.clientX = dom.getElemLeft(this) + this.clientWidth / 2;
+            mouseEvent.y = mouseEvent.clientY = dom.getElemTop(this) - _self.editor.renderer.layerConfig.lineHeight / 2;
             
             midDownY2Pointer = midDownY - mouseEvent.y;
             midDownX2Pointer = midDownX - mouseEvent.x;
@@ -100,20 +97,33 @@ class SelectDrawableEventHandler {
 
         var onTouchEnd = function (e) {
             selectors.ignoreUpdate = false;
-            var cursor = _self.editor.renderer.$cursorLayer;
             var config = _self.editor.renderer.layerConfig;
             // reset handlers position
             selectors.update(config);
-            var start = _self.editor.selection.getSelectionLead();
-            var startPos = cursor.session.documentToScreenPosition(start);
-            var startCursorLeft = cursor.$padding + startPos.column * config.characterWidth;
-            var startCursorTop = (startPos.row - config.firstRowScreen) * config.lineHeight;
-            var transX = dom.getElemLeft(cursor.element) - _self.editor.renderer.scrollLeft;
-            var transY = dom.getElemTop(cursor.element) - _self.editor.renderer.layerConfig.offset;
             var setMode = require("./touch_handler").setMode;
             setMode("");
 
-            event.callAndroidEditor("showContextMenu", transX + startCursorLeft, transY + startCursorTop);
+            var start = _self.editor.selection.getSelectionLead();
+            var screen = _self.editor.renderer.textToScreenCoordinates(start.row, start.column);
+            var doc = _self.editor.container && _self.editor.container.ownerDocument;
+            var win = doc && doc.defaultView;
+            var scrollLeft = win ? (win.pageXOffset || doc.documentElement.scrollLeft || 0) : 0;
+            var scrollTop = win ? (win.pageYOffset || doc.documentElement.scrollTop || 0) : 0;
+            var x = screen.pageX + scrollLeft;
+            var y = screen.pageY + scrollTop;
+            y -= Math.round(config && config.lineHeight ? config.lineHeight * 1.5 : 24);
+            var rect = _self.editor.container && _self.editor.container.getBoundingClientRect && _self.editor.container.getBoundingClientRect();
+            if (rect && rect.right > rect.left && rect.bottom > rect.top) {
+                var pageLeft = rect.left + scrollLeft;
+                var pageRight = rect.right + scrollLeft;
+                var pageTop = rect.top + scrollTop;
+                var pageBottom = rect.bottom + scrollTop;
+                if (x < pageLeft) x = pageLeft;
+                if (x > pageRight) x = pageRight;
+                if (y < pageTop) y = pageTop;
+                if (y > pageBottom) y = pageBottom;
+            }
+            event.callAndroidEditor("showContextMenu", x, y);
             var hideMenu = function () {
                 event.callAndroidEditor("hideContextMenu");
                 _self.editor.off("input", hideMenu);
@@ -148,8 +158,6 @@ class SelectDrawableEventHandler {
         var selectors = this.editor.renderer.$selectorLayer;
         selectors.ignoreUpdate = true;
 
-        var cursorLayerLeft = dom.getElemLeft(this.editor.renderer.$cursorLayer.element);
-
         var elem = e.target || e.srcElement;
 
         this.leftDownX = e.clientX;
@@ -167,21 +175,10 @@ class SelectDrawableEventHandler {
         var anchor = selection.getSelectionAnchor();
         var lead = selection.getSelectionLead();
 
-        var x;
-        if (isRightHandler) {
-            x = dom.getElemLeft(elem) - cursorLayerLeft + 11;
-        } else {
-            x = dom.getElemLeft(elem) - cursorLayerLeft + elem.clientWidth + -11/*margin in css*/;
-        }
-        x -= this.editor.renderer.scrollLeft;
-        var y = dom.getElemTop(elem) - this.editor.renderer.layerConfig.lineHeight / 2 - this.editor.renderer.layerConfig.offset;
-
-        // var pointer = getPointer(this.editor);
-        // pointer.style.left = (x - pointer.clientWidth / 2) + "px";
-        // pointer.style.top = (y - pointer.clientHeight / 2) + "px";
-
-        var screenX = x + cursorLayerLeft;
-        var screenY = y;
+        var screenX = isRightHandler
+            ? dom.getElemLeft(elem) + 11
+            : dom.getElemLeft(elem) + elem.clientWidth - 11;
+        var screenY = dom.getElemTop(elem) - this.editor.renderer.layerConfig.lineHeight / 2;
         var pos = this.editor.renderer.screenToTextCoordinates(screenX, screenY);
         // console.log("liuzh: downPos=("+pos.row+","+pos.column+")");
         
@@ -207,12 +204,20 @@ class SelectDrawableEventHandler {
         // marginLeft in css
         var marginLeft = isRightHandler ? 11 : 33;
 
-        var cursorLeft = dom.getElemLeft(this.editor.renderer.$cursorLayer.element);
-        var left = e.clientX - this.leftDownXOffset - cursorLeft + marginLeft;
-        var top = e.clientY - this.leftDownYOffset;
+        var cursorLayer = this.editor.renderer.$cursorLayer.element;
+        var cursorLeft = dom.getElemLeft(cursorLayer);
+        var cursorTop = dom.getElemTop(cursorLayer);
 
-        var x = left + cursorLeft - this.editor.renderer.scrollLeft;
-        var y = top - this.editor.renderer.layerConfig.lineHeight / 2 - this.editor.renderer.layerConfig.offset;
+        var elemScreenLeft = e.clientX - this.leftDownXOffset;
+        var elemScreenTop = e.clientY - this.leftDownYOffset;
+
+        var left = elemScreenLeft - cursorLeft + marginLeft;
+        var top = elemScreenTop - cursorTop;
+
+        var x = isRightHandler
+            ? elemScreenLeft + 11
+            : elemScreenLeft + elem.clientWidth - 11;
+        var y = elemScreenTop - this.editor.renderer.layerConfig.lineHeight / 2;
 
         // console.log("liuzh: lr.move: cursorLeft="+cursorLeft+", offX="+this.leftDownXOffset+", scrollLeft="+this.editor.renderer.scrollLeft);
         

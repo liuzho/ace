@@ -1244,8 +1244,12 @@ class VirtualRenderer {
 
      */
     $getLongestLine() {
-        var charCount = this.session.getScreenWidth();
-        if (this.showInvisibles && !this.session.$useWrapMode)
+        var session = this.session;
+        if (!session)
+            return Math.max(this.$size.scrollerWidth - 2 * this.$padding, 0);
+        
+        var charCount = session.getScreenWidth ? session.getScreenWidth() : 0;
+        if (this.showInvisibles && !session.$useWrapMode)
             charCount += 1;
 
         if (this.$textLayer && charCount > this.$textLayer.MAX_LINE_LENGTH)
