@@ -204,15 +204,15 @@ class SelectDrawableEventHandler {
         // marginLeft in css
         var marginLeft = isRightHandler ? 11 : 33;
 
-        var cursorLayer = this.editor.renderer.$cursorLayer.element;
-        var cursorLeft = dom.getElemLeft(cursorLayer);
-        var cursorTop = dom.getElemTop(cursorLayer);
+        var layerElement = selectors.element;
+        var layerLeft = dom.getElemLeft(layerElement);
+        var layerTop = dom.getElemTop(layerElement);
 
         var elemScreenLeft = e.clientX - this.leftDownXOffset;
         var elemScreenTop = e.clientY - this.leftDownYOffset;
 
-        var left = elemScreenLeft - cursorLeft + marginLeft;
-        var top = elemScreenTop - cursorTop;
+        var left = elemScreenLeft - layerLeft + marginLeft;
+        var top = elemScreenTop - layerTop;
 
         var x = isRightHandler
             ? elemScreenLeft + 11
