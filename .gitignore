@@ -27,3 +27,6 @@ dist
 
 lib/ace
 styles
+
+
+build/
