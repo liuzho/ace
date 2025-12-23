@@ -6,6 +6,34 @@ function Bridge(editor) {
     this.lastTextLength = 0;
     this.editor = editor;
     this.loading = false;
+    this.insets = {top: 0, right: 0, bottom: 0, left: 0};
+
+    this._getInsetNumber = function(data, key) {
+        if (!data) return 0;
+        var n = data[key];
+        if (typeof n !== "number" || !isFinite(n)) return 0;
+        n = n | 0;
+        return n < 0 ? 0 : n;
+    };
+
+    this.setInsets = function(data) {
+        var left = this._getInsetNumber(data, "left");
+        var right = this._getInsetNumber(data, "right");
+        var bottom = this._getInsetNumber(data, "bottom");
+        var top = this._getInsetNumber(data, "top");
+
+        this.insets = {top: top, right: right, bottom: bottom, left: left};
+
+        if (editor && editor.renderer) {
+            editor.renderer.$insets = this.insets;
+        }
+
+        if (editor && editor.resize) {
+            editor.resize(true);
+        }
+
+        return true;
+    };
 
     this.execCommand = function (cmd, data) {
         if (this[cmd]) {

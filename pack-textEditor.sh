@@ -43,6 +43,7 @@ mkdir -p "$PACKAGE_DIR"
 rsync -a \
     --exclude="__MACOSX" \
     --exclude=".DS_Store" \
+    --exclude="*.md" \
     --exclude="._*" \
     --exclude=".AppleDouble" \
     --exclude=".Spotlight-V100" \

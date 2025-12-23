@@ -59,6 +59,7 @@ class VirtualRenderer {
         this.scroller.className = "ace_scroller";
 
         this.container.appendChild(this.scroller);
+        this.$insets = null;
         /**@type {HTMLElement}*/
         this.content = dom.createElement("div");
         this.content.className = "ace_content";
@@ -383,6 +384,18 @@ class VirtualRenderer {
      */
     $updateCachedSize(force, gutterWidth, width, height) {
         height -= (this.$extraHeight || 0);
+        var insets = this.$insets;
+        var insetRight = 0;
+        var insetBottom = 0;
+        var insetLeft = 0;
+        if (insets) {
+            insetRight = insets.right | 0;
+            insetBottom = insets.bottom | 0;
+            insetLeft = insets.left | 0;
+            if (insetRight < 0) insetRight = 0;
+            if (insetBottom < 0) insetBottom = 0;
+            if (insetLeft < 0) insetLeft = 0;
+        }
         var changes = 0;
         var size = this.$size;
         var oldSize = {
@@ -394,6 +407,9 @@ class VirtualRenderer {
         if (height && (force || size.height != height)) {
             size.height = height;
             changes |= this.CHANGE_SIZE;
+
+            this.scrollMargin.bottom = insetBottom;
+            this.scrollMargin.v = this.scrollMargin.top + this.scrollMargin.bottom;
 
             size.scrollerHeight = size.height;
             if (this.$horizScroll)
@@ -409,6 +425,7 @@ class VirtualRenderer {
             changes |= this.CHANGE_SIZE;
             size.width = width;
 
+            dom.setStyle(this.$gutter.style, "paddingLeft", insetLeft ? insetLeft + "px" : "");
             if (gutterWidth == null)
                 gutterWidth = this.$showGutter ? this.$gutter.offsetWidth : 0;
 
@@ -416,13 +433,13 @@ class VirtualRenderer {
 
             dom.setStyle(this.scrollBarH.element.style, "left", gutterWidth + "px");
             dom.setStyle(this.scroller.style, "left", gutterWidth + this.margin.left + "px");
-            size.scrollerWidth = Math.max(0, width - gutterWidth - this.scrollBarV.getWidth() - this.margin.h);
+            size.scrollerWidth = Math.max(0, width - gutterWidth - this.scrollBarV.getWidth() - this.margin.h - insetRight);
             dom.setStyle(this.$gutter.style, "left", this.margin.left + "px");
 
-            var right = "0px";
+            var right = insetRight + "px";
             dom.setStyle(this.scrollBarH.element.style, "right", right);
             dom.setStyle(this.scroller.style, "right", right);
-            dom.setStyle(this.scroller.style, "bottom", "0px");
+            dom.setStyle(this.scrollBarV.element.style, "right", right);
 
             this.scrollBarH.setWidth(size.scrollerWidth);
 
